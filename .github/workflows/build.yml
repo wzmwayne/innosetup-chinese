@@ -1,4 +1,4 @@
-name: Build Inno Setup
+name: Build Inno Setup Chinese
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  release:
     runs-on: windows-latest
 
     steps:
@@ -17,36 +17,78 @@ jobs:
       with:
         submodules: recursive
 
-    - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v2
-
-    - name: Setup Delphi
-      uses: DelphiWorldWide/setup-delphi@v1.0
-      with:
-        delphi-version: community
-
-    - name: Install GetIt dependencies
+    - name: Create Release Package
       run: |
         cd ${{ github.workspace }}
-        .\getit.bat --no-gui
+        New-Item -ItemType Directory -Force -Path release
 
-    - name: Build 64-bit
-      run: |
-        cd ${{ github.workspace }}
-        .\compile.bat x64
+        # Copy Chinese language files
+        Copy-Item "Files\Languages\Unofficial\ChineseSimplified.isl" -Destination "release\"
+        Copy-Item "Files\Default.isl" -Destination "release\Default.en.isl"
 
-    - name: Build 32-bit
-      run: |
-        cd ${{ github.workspace }}
-        .\compile.bat x86
+        # Create README
+        @'
+        # Inno Setup 汉化版
 
-    - name: Upload artifacts
+        这是一个 Inno Setup 编译器的汉化版本。
+
+        ## 汉化内容
+
+        - 编译器消息完全汉化
+        - IDE 界面完全汉化
+        - 运行时错误消息汉化
+        - 资源文件版本信息汉化
+
+        ## 使用方法
+
+        ### 方法一：替换语言文件（推荐）
+
+        1. 下载本仓库中的 `ChineseSimplified.isl`
+        2. 将其复制到 Inno Setup 安装目录的 `Languages` 文件夹中
+        3. 在编译脚本中使用 `[Languages]` 节添加中文语言
+
+        ```iss
+        [Languages]
+        Name: "chinesesimplified"; MessagesFile: "compiler:Languages\ChineseSimplified.isl"
+        ```
+
+        ### 方法二：重新编译（需要 Delphi）
+
+        如果您想重新编译包含汉化的 Inno Setup：
+
+        1. 安装 Delphi Community Edition（免费）
+        2. 创建 `compilesettings.bat` 文件，内容如下：
+           ```
+           set DELPHIXEROOT=C:\Program Files\Embarcadero\RAD Studio\22.0
+           ```
+        3. 运行 `compile.bat x64` 编译 64 位版本
+        4. 运行 `compile.bat x86` 编译 32 位版本
+
+        ## 汉化文件列表
+
+        - `Projects\Src\Compiler.Messages.pas` - 编译器消息
+        - `Projects\Src\IDE.Messages.pas` - IDE 界面消息
+        - `Projects\Src\SetupLdrAndSetup.Messages.pas` - 运行时消息
+        - `Projects\Res\Setup.version.rc` - 版本信息
+        - `Files\Languages\Unofficial\ChineseSimplified.isl` - 安装程序语言文件
+
+        ## 许可证
+
+        本项目基于 Inno Setup 原始源码汉化，遵循相同的许可证。
+
+        ## 贡献
+
+        欢迎提交 Issue 和 Pull Request 来改进汉化质量。
+
+        ## 致谢
+
+        - Jordan Russell - Inno Setup 原作者
+        - Martijn Laan - Inno Setup 维护者
+        '@ | Out-File -FilePath "release\README.md" -Encoding UTF8
+
+    - name: Upload Release
       uses: actions/upload-artifact@v4
       with:
-        name: inno-setup-binaries
-        path: |
-          Files/*.exe
-          Files/*.dll
-          Files/*.e32
-          Files/*.e64
-        retention-days: 30
+        name: inno-setup-chinese-release
+        path: release/
+        retention-days: 90
