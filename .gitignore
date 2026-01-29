@@ -1,9 +1,82 @@
-/c.bat
-/compilesettings.bat
-/setup-presign.bat
-/setup-sign.bat
-/Output
+# Build outputs
+Output/
+*.dcu
+*.exe
+*.dll
+*.res
+*.obj
+*.o
+*.a
+*.lib
+*.dcp
+*.dcpil
+*.bpl
+*.dproj.local
+*.dsk
+*.~*
+*.bak
+*.tmp
 
-# Directories created by the RAD Studio IDE whenever files are edited
+# Delphi
 __history/
 __recovery/
+*.identcache
+*.stat
+
+# IDE
+*.dproj.user
+*.dproj.local
+*.groupproj.user
+*.groupproj.local
+
+# Compiled files
+*.hpp
+*.h
+*.rsm
+
+# Log files
+*.log
+
+# Temporary files
+*.temp
+*.cache
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Inno Setup specific
+Files/*.e32
+Files/*.e64
+Files/*.exe
+Files/*.dll
+Files/ISCmplr.dll
+Files/ISPP.dll
+Files/Setup*.e*
+Files/Setup*.exe
+Files/SetupLdr*.e*
+Files/ISCC.exe
+Files/ISIDE.exe
+Files/ISSigTool.exe
+Files/is7z*.dll
+Files/isbunzip*.dll
+Files/islzma*.dll
+Files/iszlib*.dll
+Files/isscint*.dll
+
+# Help files
+ISHelp/*.chm
+ISHelp/*.hhp
+ISHelp/*.hhc
+ISHelp/*.hhk
+ISHelp/*.hh
+
+# Signatures
+*.issig
+*.pem
+*.key
+
+# Backup files
+*.backup
+*.old

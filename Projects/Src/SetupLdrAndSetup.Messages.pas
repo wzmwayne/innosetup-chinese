@@ -38,18 +38,18 @@ const
   { You don't have to translate these. The only time they are used is when an
     error occurs before or while the messages file is loaded. Otherwise, it
     uses the corresponding messages in the messages file. }
-  SSetupFileMissing = 'The file %1 is missing from the installation directory. ' +
-    'Please correct the problem or obtain a new copy of the program.';
-  SSetupFileCorrupt = 'The setup files are corrupted. Please obtain a new ' +
-    'copy of the program.';
-  SSetupFileCorruptOrWrongVer = 'The setup files are corrupted, or are ' +
-    'incompatible with this version of Setup. Please correct the problem or ' +
-    'obtain a new copy of the program.';
-  SMsgsFileMissing = 'Messages file "%s" is missing. Please correct ' +
-    'the problem or obtain a new copy of the program.';
+  SSetupFileMissing = '安装目录中缺少文件 %1。' +
+    '请修正这个问题或获取程序的新副本。';
+  SSetupFileCorrupt = '安装文件已损坏。请获取程序的' +
+    '新副本。';
+  SSetupFileCorruptOrWrongVer = '安装文件已损坏，或与 ' +
+    '此版本的安装程序不兼容。请修正问题或 ' +
+    '获取程序的新副本。';
+  SMsgsFileMissing = '消息文件 "%s" 缺失。请修正 ' +
+    '问题或获取程序的新副本。';
   { These currently always occur before the messages file is loaded }
-  SMissingPassword = 'Please specify the password using the /PASSWORD= command line parameter.';
-  SIncorrectPassword = 'The password you specified is not correct. Please try again.';
+  SMissingPassword = '请使用 /PASSWORD= 命令行参数指定密码。';
+  SIncorrectPassword = '您输入的密码不正确，请重新输入。';
 
 implementation
 
@@ -57,7 +57,7 @@ uses
   Windows, SysUtils, Compression.Base, Shared.CommonFunc, Shared.FileClass;
 
 const
-  SMsgsFileTooLarge = 'Internal error: Messages file is too large';
+  SMsgsFileTooLarge = '内部错误：消息文件过大';
 
 function FmtMessage(S: PChar; const Args: array of String): String;
 var

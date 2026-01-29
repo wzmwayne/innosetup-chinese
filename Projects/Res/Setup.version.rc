@@ -19,10 +19,10 @@ BEGIN
     BEGIN
         BLOCK "000004b0"
         BEGIN
-            VALUE "FileDescription", "Setup/Uninstall\0"
+            VALUE "FileDescription", "安装程序/卸载程序\0"
             VALUE "FileVersion", "51.1055.0.0\0"
                   // NOTE: Be sure to keep FILEVERSION in sync!
-            VALUE "Comments", "This installation was built with Inno Setup.\0"
+            VALUE "Comments", "此安装程序使用 Inno Setup 构建。\0"
             VALUE "CompanyName", "                                                            \0"
             VALUE "LegalCopyright", "                                                                                                    \0"
             VALUE "OriginalFileName", "                                                  \0"
