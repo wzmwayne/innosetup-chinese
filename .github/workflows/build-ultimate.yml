@@ -20,33 +20,34 @@ jobs:
 
     - name: Check available tools
       id: check
+      shell: pwsh
       run: |
         cd ${{ github.workspace }}
         echo "Checking available build tools..."
 
         # Check MSBuild
-        where msbuild
-        if %ERRORLEVEL% EQU 0 (
-          echo "method=msbuild" >> $GITHUB_OUTPUT
+        $msbuild = Get-Command msbuild -ErrorAction SilentlyContinue
+        if ($msbuild) {
+          echo "method=msbuild" >> $env:GITHUB_OUTPUT
           echo "MSBuild available"
-        )
+        }
 
         # Check FPC
-        where fpc
-        if %ERRORLEVEL% EQU 0 (
-          echo "method=fpc" >> $GITHUB_OUTPUT
+        $fpc = Get-Command fpc -ErrorAction SilentlyContinue
+        if ($fpc) {
+          echo "method=fpc" >> $env:GITHUB_OUTPUT
           echo "FPC available"
-        )
+        }
 
         # Check for Delphi registry keys
-        reg query "HKLM\SOFTWARE\Embarcadero" 2>nul
-        if %ERRORLEVEL% EQU 0 (
-          echo "method=delphi" >> $GITHUB_OUTPUT
+        $delphi = Get-ItemProperty "HKLM:\SOFTWARE\Embarcadero" -ErrorAction SilentlyContinue
+        if ($delphi) {
+          echo "method=delphi" >> $env:GITHUB_OUTPUT
           echo "Delphi installed"
-        )
+        }
 
         # Default to package release
-        echo "method=package" >> $GITHUB_OUTPUT
+        echo "method=package" >> $env:GITHUB_OUTPUT
 
   build-with-msbuild:
     needs: prepare
