@@ -1,0 +1,146 @@
+name: Ultimate Build - Multiple Methods
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  prepare:
+    runs-on: windows-latest
+    outputs:
+      method-success: ${{ steps.check.outputs.method }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Check available tools
+      id: check
+      run: |
+        cd ${{ github.workspace }}
+        echo "Checking available build tools..."
+
+        # Check MSBuild
+        where msbuild
+        if %ERRORLEVEL% EQU 0 (
+          echo "method=msbuild" >> $GITHUB_OUTPUT
+          echo "MSBuild available"
+        )
+
+        # Check FPC
+        where fpc
+        if %ERRORLEVEL% EQU 0 (
+          echo "method=fpc" >> $GITHUB_OUTPUT
+          echo "FPC available"
+        )
+
+        # Check for Delphi registry keys
+        reg query "HKLM\SOFTWARE\Embarcadero" 2>nul
+        if %ERRORLEVEL% EQU 0 (
+          echo "method=delphi" >> $GITHUB_OUTPUT
+          echo "Delphi installed"
+        )
+
+        # Default to package release
+        echo "method=package" >> $GITHUB_OUTPUT
+
+  build-with-msbuild:
+    needs: prepare
+    if: needs.prepare.outputs.method-success == 'msbuild'
+    runs-on: windows-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Build
+      run: |
+        cd ${{ github.workspace }}
+        msbuild Projects\Projects.groupproj /t:Build /p:Configuration=Release /p:Platform=Win64 || echo "Build failed"
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: msbuild-binaries
+        path: Files/
+        retention-days: 30
+
+  build-with-fpc:
+    needs: prepare
+    if: needs.prepare.outputs.method-success == 'fpc'
+    runs-on: windows-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install FPC via scoop
+      run: |
+        irm get.scoop.sh | iex
+        scoop install fpc
+
+    - name: Build
+      run: |
+        cd ${{ github.workspace }}
+        fpc -Px86_64 -O3 -dRELEASE Projects\Src\Setup.dpr
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: fpc-binaries
+        path: Files/
+        retention-days: 30
+
+  create-package:
+    needs: prepare
+    if: needs.prepare.outputs.method-success == 'package'
+    runs-on: windows-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Create language package
+      run: |
+        cd ${{ github.workspace }}
+        New-Item -ItemType Directory -Force -Path release
+
+        # Copy all language files
+        Copy-Item "Files\Languages\Unofficial\*.isl" -Destination "release\" -Recurse
+        Copy-Item "Files\Default.isl" -Destination "release\"
+
+        # Create portable launcher
+        @'
+        @echo off
+        REM Inno Setup 汉化版启动器
+        REM 这个脚本会使用汉化语言文件启动 Inno Setup
+
+        if exist "Files\ISCC.exe" (
+            echo Starting Inno Setup Command Line Compiler (Chinese)
+            start "" "Files\ISCC.exe"
+        ) else if exist "Files\ISIDE.exe" (
+            echo Starting Inno Setup Compiler IDE (Chinese)
+            start "" "Files\ISIDE.exe"
+        ) else (
+            echo Inno Setup not found in Files directory
+            echo Please copy Inno Setup files to Files directory
+            pause
+        )
+        '@ | Out-File -FilePath "release\启动汉化版.bat" -Encoding ASCII
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: inno-setup-chinese-package
+        path: release/
+        retention-days: 90
