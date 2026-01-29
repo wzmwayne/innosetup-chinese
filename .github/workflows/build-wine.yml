@@ -1,0 +1,53 @@
+name: Build with Wine (Windows on Linux)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install Wine and Delphi dependencies
+      run: |
+        sudo dpkg --add-architecture i386
+        sudo apt-get update
+        sudo apt-get install -y wine64 wine32 winetricks
+
+    - name: Setup Wine
+      run: |
+        wine64 --version
+        winetricks vcrun2019 vcrun2022
+
+    - name: Download Delphi Portable
+      run: |
+        mkdir -p ~/delphi
+        # Note: You would need to provide a Delphi portable version
+        # This is a placeholder - actual Delphi download requires license
+        echo "Delphi portable download would go here"
+
+    - name: Build 64-bit
+      run: |
+        cd $GITHUB_WORKSPACE
+        wine64 cmd.exe /c compile.bat x64
+
+    - name: Build 32-bit
+      run: |
+        cd $GITHUB_WORKSPACE
+        wine64 cmd.exe /c compile.bat x86
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: inno-setup-binaries
+        path: Files/
+        retention-days: 30

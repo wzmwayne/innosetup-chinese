@@ -1,0 +1,39 @@
+name: Build with Delphi Self-Hosted
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Build 64-bit
+      run: |
+        cd ${{ github.workspace }}
+        .\compile.bat x64
+
+    - name: Build 32-bit
+      run: |
+        cd ${{ github.workspace }}
+        .\compile.bat x86
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: inno-setup-binaries
+        path: |
+          Files/*.exe
+          Files/*.dll
+          Files/*.e32
+          Files/*.e64
+        retention-days: 30

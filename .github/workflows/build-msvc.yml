@@ -1,0 +1,34 @@
+name: Build with Lazarus (Alternative)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install Lazarus
+      run: |
+        choco install lazarus -y
+
+    - name: Build 64-bit
+      run: |
+        cd ${{ github.workspace }}
+        lazbuild --build-mode=release Projects\Src\Setup.lpi
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: inno-setup-binaries
+        path: Files/
+        retention-days: 30

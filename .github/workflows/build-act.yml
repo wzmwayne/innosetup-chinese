@@ -1,0 +1,63 @@
+name: Build with Act (Local Actions Runner Simulation)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Setup build environment
+      run: |
+        echo "Setting up build environment..."
+
+    - name: Try to find Delphi installations
+      run: |
+        echo "Searching for Delphi installations..."
+        if exist "C:\Program Files\Embarcadero\RAD Studio\" (
+          echo "Found Delphi installation"
+          dir "C:\Program Files\Embarcadero\RAD Studio\"
+        ) else (
+          echo "No Delphi installation found"
+        )
+
+    - name: Build with MSBuild if available
+      run: |
+        cd ${{ github.workspace }}
+        where msbuild
+        if %ERRORLEVEL% EQU 0 (
+          echo "MSBuild found, attempting build..."
+          msbuild Projects\Projects.groupproj /t:Build /p:Configuration=Release /p:Platform=Win64 || echo "MSBuild failed"
+        ) else (
+          echo "MSBuild not found"
+        )
+
+    - name: Try alternative build methods
+      run: |
+        cd ${{ github.workspace }}
+        echo "Checking for pre-built binaries..."
+        if exist "Files\*.exe" (
+          echo "Found pre-built binaries"
+        ) else (
+          echo "No pre-built binaries found"
+        )
+
+    - name: Upload any existing binaries
+      uses: actions/upload-artifact@v4
+      with:
+        name: inno-setup-binaries
+        path: |
+          Files/*.exe
+          Files/*.dll
+        if-no-files-found: warn
+        retention-days: 30

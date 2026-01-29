@@ -1,0 +1,39 @@
+name: Build with Free Pascal Compiler
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install FPC
+      run: |
+        choco install fpc -y
+
+    - name: Build 64-bit
+      run: |
+        cd ${{ github.workspace }}
+        fpc -Px86_64 -O3 -dRELEASE Projects\Src\Setup.dpr
+
+    - name: Build 32-bit
+      run: |
+        cd ${{ github.workspace }}
+        fpc -Pi386 -O3 -dRELEASE Projects\Src\Setup.dpr
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: inno-setup-binaries
+        path: Files/
+        retention-days: 30
